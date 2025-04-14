@@ -1,0 +1,13 @@
+module_id,project_id,module_name,type,status,start_date,target_completion,actual_completion,assigned_to
+M001,1,Office Module A1,Office,Completed,2023-01-20,2023-02-15,2023-02-14,1
+M002,1,Office Module A2,Office,Completed,2023-01-25,2023-02-20,2023-02-18,4
+M003,1,Office Module A3,Office,Completed,2023-02-01,2023-02-25,2023-02-26,1
+M004,1,Office Module B1,Office,Completed,2023-02-05,2023-03-01,2023-03-02,4
+M005,1,Office Module B2,Office,In Progress,2023-02-10,2023-03-05,,1
+M006,1,Office Module B3,Office,In Progress,2023-02-15,2023-03-10,,4
+M007,2,Apartment Unit 101,Residential,Completed,2023-03-15,2023-04-15,2023-04-14,1
+M008,2,Apartment Unit 102,Residential,Completed,2023-03-20,2023-04-20,2023-04-22,4
+M009,2,Apartment Unit 103,Residential,In Progress,2023-03-25,2023-04-25,,1
+M010,3,Hospital Room H1,Medical,Completed,2023-02-05,2023-03-05,2023-03-04,4
+M011,3,Hospital Room H2,Medical,Completed,2023-02-10,2023-03-10,2023-03-09,1
+M012,3,Hospital Room H3,Medical,In Progress,2023-02-15,2023-03-15,,4 

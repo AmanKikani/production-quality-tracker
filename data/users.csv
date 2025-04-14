@@ -1,0 +1,9 @@
+user_id,username,password,email,role,department
+1,john_doe,password123,john@example.com,operator,Assembly
+2,jane_smith,pass456,jane@example.com,inspector,Quality Control
+3,mike_jones,secure789,mike@example.com,manager,Production Management
+4,sara_wilson,safepass,sara@example.com,operator,Fabrication
+5,tom_brown,tompass,tom@example.com,supervisor,Assembly
+6,lisa_garcia,lisapass,lisa@example.com,inspector,Quality Control
+7,alex_chen,alexpass,alex@example.com,engineer,Engineering
+8,rachel_kim,rachelpass,rachel@example.com,manager,Quality Management 

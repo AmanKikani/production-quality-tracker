@@ -1,0 +1,13 @@
+task_id,issue_id,module_id,assigned_to,assigned_by,assigned_date,due_date,description,priority,status,completion_date
+T001,I001,M002,4,3,2023-02-10,2023-02-13,Replace panel with correct thickness,Medium,Completed,2023-02-12
+T002,I002,M003,1,3,2023-02-20,2023-02-24,Realign and reinforce structural joints,High,Completed,2023-02-23
+T003,I003,M004,4,5,2023-02-28,2023-03-02,Secure electrical connections and test,Low,Completed,2023-03-01
+T004,I004,M005,1,3,2023-03-01,2023-03-05,Sand and repaint exterior wall section,Medium,In Progress,
+T005,I005,M008,4,3,2023-04-15,2023-04-19,Replace and test bathroom fixture,High,Completed,2023-04-18
+T006,I006,M009,4,5,2023-04-22,2023-04-26,Reseal ventilation duct and test airflow,Medium,In Progress,
+T007,I007,M010,1,3,2023-03-01,2023-03-03,Install missing fire safety components and verify,Critical,Completed,2023-03-02
+T008,I008,M011,4,5,2023-03-08,2023-03-10,Polish countertop to remove scratches,Low,Completed,2023-03-09
+T009,I009,M012,1,3,2023-03-12,2023-03-15,Reinforce support beam according to specifications,High,In Progress,
+T010,,M005,4,5,2023-03-03,2023-03-07,Conduct quality inspection before next phase,Medium,Completed,2023-03-06
+T011,,M006,1,3,2023-03-05,2023-03-08,Prepare module for electrical installation,Medium,In Progress,
+T012,,M009,4,5,2023-04-20,2023-04-24,Complete interior drywall finishing,Low,In Progress, 
