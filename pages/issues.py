@@ -234,10 +234,9 @@ def create_task_for_issue(issue_id, module_id):
 def issues_page():
     """Main issues page"""
     user_data = get_current_user()
-    display_header("Quality Issues", user_data)
     
     # Check if a specific issue is selected
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params
     selected_issue_id = query_params.get("issue_id", [None])[0]
     
     if selected_issue_id:
@@ -246,7 +245,7 @@ def issues_page():
         
         # Back button
         if st.button("⬅️ Back to Issues"):
-            st.experimental_set_query_params()
+            st.query_params.clear()
             st.rerun()
     else:
         # Show issues overview
@@ -353,7 +352,8 @@ def issues_page():
                     # View button
                     if selected_issue and st.button("View Issue", use_container_width=True):
                         issue_id = selected_issue.split(" - ")[0]
-                        st.experimental_set_query_params(issue_id=issue_id)
+                        st.query_params.clear()
+                        st.query_params.add({"issue_id": issue_id})
                         st.rerun()
         
         with tab2:

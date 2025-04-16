@@ -447,10 +447,9 @@ def task_performance_report():
                 hide_index=True
             )
 
-def reports_page():
-    """Main reports page"""
+def show_reports_dashboard():
+    """Show the reports dashboard with tabs for different report types"""
     user_data = get_current_user()
-    display_header("Analytics & Reports", user_data)
     
     # Check permissions
     can_view_analytics = user_data['role'].lower() in ['manager', 'supervisor', 'inspector', 'engineer']
@@ -463,13 +462,24 @@ def reports_page():
     tab1, tab2, tab3 = st.tabs(["Project Reports", "Quality Reports", "Task Reports"])
     
     with tab1:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
         project_completion_report()
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with tab2:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
         quality_issues_report()
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with tab3:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
         task_performance_report()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+def reports_page():
+    """Main reports page"""
+    # Show reports dashboard
+    show_reports_dashboard()
 
 # Run the page if this script is the main entry point
 if __name__ == "__main__":

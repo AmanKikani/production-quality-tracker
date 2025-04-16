@@ -231,29 +231,42 @@ def display_header(title, user_data=None):
     """Display page header with title and user info"""
     col1, col2 = st.columns([6, 3])
     
+    # Title in the left column
     with col1:
-        st.markdown(f"<h1 class='main-header'>{title}</h1>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="display: flex; align-items: center;">
+            <h1 style="margin: 0; padding: 0; font-size: 1.75rem; font-weight: 600; color: #1e3a8a;">{title}</h1>
+        </div>
+        """, unsafe_allow_html=True)
     
+    # User info in the right column
     with col2:
         if user_data:
             notification_count = get_unseen_notification_count(user_data['user_id'])
-            notification_badge = f"<span class='notification-badge'>{notification_count}</span>" if notification_count > 0 else ""
+            notification_badge = f'<span class="notification-badge">{notification_count}</span>' if notification_count > 0 else ''
             
-            st.markdown(
-                f"""
-                <div class='user-info'>
-                    <span style='margin-right: 10px;'>
-                        <i class="fas fa-user-circle" style="margin-right: 5px;"></i>
-                        <strong>{user_data['username']}</strong> ({user_data['role'].capitalize()})
-                    </span>
+            st.markdown(f"""
+            <div style="display: flex; justify-content: flex-end; align-items: center;">
+                <div style="display: flex; align-items: center; background-color: white; 
+                    padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="margin-right: 0.75rem;">
+                        <div style="font-weight: 600; font-size: 0.875rem; color: #334155; margin-bottom: 0.125rem;">
+                            {user_data['username']}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #64748b;">
+                            {user_data['role'].capitalize()}
+                        </div>
+                    </div>
+                    <div style="width: 2.25rem; height: 2.25rem; background-color: #e0e7ff; 
+                        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                        color: #4338ca; font-weight: 600; font-size: 0.875rem; border: 2px solid #c7d2fe;">
+                        {user_data['username'][0].upper()}
+                    </div>
                     {notification_badge}
                 </div>
-                """, 
-                unsafe_allow_html=True
-            )
-    
-    # Add a subtle divider
-    st.markdown("<hr style='margin-top: 0.5rem; margin-bottom: 2rem;'>", unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
 
 def render_card(title, content, className=""):
     """Render a card with title and content"""

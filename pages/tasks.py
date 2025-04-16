@@ -213,13 +213,223 @@ def create_new_task():
     
     return False
 
+def show_tasks_dashboard(user_data):
+    """Show the tasks dashboard with tabs for My Tasks, All Tasks, and Create Task"""
+    # Show tasks overview with tabs
+    tab1, tab2, tab3 = st.tabs(["My Tasks", "All Tasks", "Create Task"])
+    
+    with tab1:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">My Tasks</div>', unsafe_allow_html=True)
+        
+        # Get tasks assigned to current user
+        my_tasks_df = get_tasks(assigned_to=user_data['user_id'])
+        
+        if my_tasks_df.empty:
+            st.info("No tasks assigned to you.")
+        else:
+            # Add human-readable columns
+            my_tasks_df['module_name'] = my_tasks_df['module_id'].apply(get_module_name)
+            my_tasks_df['assigned_by_name'] = my_tasks_df['assigned_by'].apply(get_user_name)
+            my_tasks_df['assigned_date_formatted'] = my_tasks_df['assigned_date'].apply(format_date)
+            my_tasks_df['due_date_formatted'] = my_tasks_df['due_date'].apply(format_date)
+            
+            # Calculate days remaining
+            my_tasks_df['days_remaining'] = my_tasks_df['due_date'].apply(calculate_days_remaining)
+            
+            # Enhance columns with indicators
+            my_tasks_df['status_display'] = my_tasks_df['status'].apply(
+                lambda x: render_status_indicator(x)
+            )
+            
+            my_tasks_df['priority_display'] = my_tasks_df['priority'].apply(
+                lambda x: render_priority_tag(x)
+            )
+            
+            # Filter controls
+            status_filter = st.selectbox(
+                "Filter by Status", 
+                ["All"] + sorted(my_tasks_df['status'].unique().tolist())
+            )
+            
+            # Apply filters
+            filtered_df = my_tasks_df.copy()
+            
+            if status_filter != "All":
+                filtered_df = filtered_df[filtered_df['status'] == status_filter]
+            
+            # Display the tasks in a dataframe
+            st.dataframe(
+                filtered_df[[
+                    'task_id', 'module_name', 'description', 'priority_display', 
+                    'status_display', 'due_date_formatted', 'days_remaining'
+                ]],
+                use_container_width=True,
+                column_config={
+                    "task_id": "ID",
+                    "module_name": "Module",
+                    "description": "Description",
+                    "priority_display": st.column_config.Column(
+                        "Priority",
+                        width="medium"
+                    ),
+                    "status_display": st.column_config.Column(
+                        "Status",
+                        width="medium"
+                    ),
+                    "due_date_formatted": "Due Date",
+                    "days_remaining": st.column_config.NumberColumn(
+                        "Days Remaining",
+                        format="%d",
+                        help="Negative values indicate overdue tasks"
+                    )
+                },
+                hide_index=True
+            )
+            
+            # Task selection
+            st.divider()
+            
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                # Drop-down to select task
+                task_options = filtered_df[['task_id', 'description']].values.tolist()
+                task_options = [f"{t[0]} - {t[1][:50]}..." for t in task_options]
+                selected_task = st.selectbox("Select a task to view details", task_options, key="my_tasks_select")
+            
+            with col2:
+                # View button
+                if selected_task and st.button("View Task", use_container_width=True, key="my_tasks_view"):
+                    task_id = selected_task.split(" - ")[0]
+                    st.query_params.clear()
+                    st.query_params.add({"task_id": task_id})
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab2:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">All Tasks</div>', unsafe_allow_html=True)
+        
+        # Get all tasks
+        all_tasks_df = get_tasks()
+        
+        if all_tasks_df.empty:
+            st.info("No tasks available.")
+        else:
+            # Add human-readable columns
+            all_tasks_df['module_name'] = all_tasks_df['module_id'].apply(get_module_name)
+            all_tasks_df['assigned_to_name'] = all_tasks_df['assigned_to'].apply(get_user_name)
+            all_tasks_df['assigned_by_name'] = all_tasks_df['assigned_by'].apply(get_user_name)
+            all_tasks_df['due_date_formatted'] = all_tasks_df['due_date'].apply(format_date)
+            
+            # Calculate days remaining
+            all_tasks_df['days_remaining'] = all_tasks_df['due_date'].apply(calculate_days_remaining)
+            
+            # Enhance columns with indicators
+            all_tasks_df['status_display'] = all_tasks_df['status'].apply(
+                lambda x: render_status_indicator(x)
+            )
+            
+            all_tasks_df['priority_display'] = all_tasks_df['priority'].apply(
+                lambda x: render_priority_tag(x)
+            )
+            
+            # Filter controls
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                status_filter = st.selectbox(
+                    "Filter by Status", 
+                    ["All"] + sorted(all_tasks_df['status'].unique().tolist()),
+                    key="all_status_filter"
+                )
+            
+            with col2:
+                priority_filter = st.selectbox(
+                    "Filter by Priority", 
+                    ["All"] + sorted(all_tasks_df['priority'].unique().tolist())
+                )
+            
+            # Apply filters
+            filtered_df = all_tasks_df.copy()
+            
+            if status_filter != "All":
+                filtered_df = filtered_df[filtered_df['status'] == status_filter]
+            
+            if priority_filter != "All":
+                filtered_df = filtered_df[filtered_df['priority'] == priority_filter]
+            
+            # Display the tasks in a dataframe
+            st.dataframe(
+                filtered_df[[
+                    'task_id', 'module_name', 'description', 'priority_display', 
+                    'status_display', 'assigned_to_name', 'due_date_formatted', 'days_remaining'
+                ]],
+                use_container_width=True,
+                column_config={
+                    "task_id": "ID",
+                    "module_name": "Module",
+                    "description": "Description",
+                    "priority_display": st.column_config.Column(
+                        "Priority",
+                        width="medium"
+                    ),
+                    "status_display": st.column_config.Column(
+                        "Status",
+                        width="medium"
+                    ),
+                    "assigned_to_name": "Assigned To",
+                    "due_date_formatted": "Due Date",
+                    "days_remaining": st.column_config.NumberColumn(
+                        "Days Remaining",
+                        format="%d",
+                        help="Negative values indicate overdue tasks"
+                    )
+                },
+                hide_index=True
+            )
+            
+            # Task selection
+            st.divider()
+            
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                # Drop-down to select task
+                task_options = filtered_df[['task_id', 'description']].values.tolist()
+                task_options = [f"{t[0]} - {t[1][:50]}..." for t in task_options]
+                selected_task = st.selectbox("Select a task to view details", task_options, key="all_tasks_select")
+            
+            with col2:
+                # View button
+                if selected_task and st.button("View Task", use_container_width=True, key="all_tasks_view"):
+                    task_id = selected_task.split(" - ")[0]
+                    st.query_params.clear()
+                    st.query_params.add({"task_id": task_id})
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab3:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Create New Task</div>', unsafe_allow_html=True)
+        # Check if user has permission to create tasks
+        can_create = user_data['role'].lower() in ['manager', 'supervisor', 'inspector']
+        
+        if can_create:
+            if create_new_task():
+                st.rerun()
+        else:
+            st.warning("You do not have permission to create tasks.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
 def tasks_page():
     """Main tasks page"""
+    # Get current user info
     user_data = get_current_user()
-    display_header("Tasks", user_data)
     
     # Check if a specific task is selected
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params
     selected_task_id = query_params.get("task_id", [None])[0]
     
     if selected_task_id:
@@ -228,207 +438,10 @@ def tasks_page():
         
         # Back button
         if st.button("⬅️ Back to Tasks"):
-            st.experimental_set_query_params()
+            st.query_params.clear()
             st.rerun()
     else:
-        # Show tasks overview with tabs
-        tab1, tab2, tab3 = st.tabs(["My Tasks", "All Tasks", "Create Task"])
-        
-        with tab1:
-            st.subheader("My Tasks")
-            
-            # Get tasks assigned to current user
-            my_tasks_df = get_tasks(assigned_to=user_data['user_id'])
-            
-            if my_tasks_df.empty:
-                st.info("No tasks assigned to you.")
-            else:
-                # Add human-readable columns
-                my_tasks_df['module_name'] = my_tasks_df['module_id'].apply(get_module_name)
-                my_tasks_df['assigned_by_name'] = my_tasks_df['assigned_by'].apply(get_user_name)
-                my_tasks_df['assigned_date_formatted'] = my_tasks_df['assigned_date'].apply(format_date)
-                my_tasks_df['due_date_formatted'] = my_tasks_df['due_date'].apply(format_date)
-                
-                # Calculate days remaining
-                my_tasks_df['days_remaining'] = my_tasks_df['due_date'].apply(calculate_days_remaining)
-                
-                # Enhance columns with indicators
-                my_tasks_df['status_display'] = my_tasks_df['status'].apply(
-                    lambda x: render_status_indicator(x)
-                )
-                
-                my_tasks_df['priority_display'] = my_tasks_df['priority'].apply(
-                    lambda x: render_priority_tag(x)
-                )
-                
-                # Filter controls
-                status_filter = st.selectbox(
-                    "Filter by Status", 
-                    ["All"] + sorted(my_tasks_df['status'].unique().tolist())
-                )
-                
-                # Apply filters
-                filtered_df = my_tasks_df.copy()
-                
-                if status_filter != "All":
-                    filtered_df = filtered_df[filtered_df['status'] == status_filter]
-                
-                # Display the tasks in a dataframe
-                st.dataframe(
-                    filtered_df[[
-                        'task_id', 'module_name', 'description', 'priority_display', 
-                        'status_display', 'due_date_formatted', 'days_remaining'
-                    ]],
-                    use_container_width=True,
-                    column_config={
-                        "task_id": "ID",
-                        "module_name": "Module",
-                        "description": "Description",
-                        "priority_display": st.column_config.Column(
-                            "Priority",
-                            width="medium"
-                        ),
-                        "status_display": st.column_config.Column(
-                            "Status",
-                            width="medium"
-                        ),
-                        "due_date_formatted": "Due Date",
-                        "days_remaining": st.column_config.NumberColumn(
-                            "Days Remaining",
-                            format="%d",
-                            help="Negative values indicate overdue tasks"
-                        )
-                    },
-                    hide_index=True
-                )
-                
-                # Task selection
-                st.divider()
-                
-                col1, col2 = st.columns([3, 1])
-                
-                with col1:
-                    # Drop-down to select task
-                    task_options = filtered_df[['task_id', 'description']].values.tolist()
-                    task_options = [f"{t[0]} - {t[1][:50]}..." for t in task_options]
-                    selected_task = st.selectbox("Select a task to view details", task_options, key="my_tasks_select")
-                
-                with col2:
-                    # View button
-                    if selected_task and st.button("View Task", use_container_width=True, key="my_tasks_view"):
-                        task_id = selected_task.split(" - ")[0]
-                        st.experimental_set_query_params(task_id=task_id)
-                        st.rerun()
-        
-        with tab2:
-            st.subheader("All Tasks")
-            
-            # Get all tasks
-            all_tasks_df = get_tasks()
-            
-            if all_tasks_df.empty:
-                st.info("No tasks available.")
-            else:
-                # Add human-readable columns
-                all_tasks_df['module_name'] = all_tasks_df['module_id'].apply(get_module_name)
-                all_tasks_df['assigned_to_name'] = all_tasks_df['assigned_to'].apply(get_user_name)
-                all_tasks_df['assigned_by_name'] = all_tasks_df['assigned_by'].apply(get_user_name)
-                all_tasks_df['due_date_formatted'] = all_tasks_df['due_date'].apply(format_date)
-                
-                # Calculate days remaining
-                all_tasks_df['days_remaining'] = all_tasks_df['due_date'].apply(calculate_days_remaining)
-                
-                # Enhance columns with indicators
-                all_tasks_df['status_display'] = all_tasks_df['status'].apply(
-                    lambda x: render_status_indicator(x)
-                )
-                
-                all_tasks_df['priority_display'] = all_tasks_df['priority'].apply(
-                    lambda x: render_priority_tag(x)
-                )
-                
-                # Filter controls
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    status_filter = st.selectbox(
-                        "Filter by Status", 
-                        ["All"] + sorted(all_tasks_df['status'].unique().tolist()),
-                        key="all_status_filter"
-                    )
-                
-                with col2:
-                    priority_filter = st.selectbox(
-                        "Filter by Priority", 
-                        ["All"] + sorted(all_tasks_df['priority'].unique().tolist())
-                    )
-                
-                # Apply filters
-                filtered_df = all_tasks_df.copy()
-                
-                if status_filter != "All":
-                    filtered_df = filtered_df[filtered_df['status'] == status_filter]
-                
-                if priority_filter != "All":
-                    filtered_df = filtered_df[filtered_df['priority'] == priority_filter]
-                
-                # Display the tasks in a dataframe
-                st.dataframe(
-                    filtered_df[[
-                        'task_id', 'module_name', 'description', 'priority_display', 
-                        'status_display', 'assigned_to_name', 'due_date_formatted', 'days_remaining'
-                    ]],
-                    use_container_width=True,
-                    column_config={
-                        "task_id": "ID",
-                        "module_name": "Module",
-                        "description": "Description",
-                        "priority_display": st.column_config.Column(
-                            "Priority",
-                            width="medium"
-                        ),
-                        "status_display": st.column_config.Column(
-                            "Status",
-                            width="medium"
-                        ),
-                        "assigned_to_name": "Assigned To",
-                        "due_date_formatted": "Due Date",
-                        "days_remaining": st.column_config.NumberColumn(
-                            "Days Remaining",
-                            format="%d",
-                            help="Negative values indicate overdue tasks"
-                        )
-                    },
-                    hide_index=True
-                )
-                
-                # Task selection
-                st.divider()
-                
-                col1, col2 = st.columns([3, 1])
-                
-                with col1:
-                    # Drop-down to select task
-                    task_options = filtered_df[['task_id', 'description']].values.tolist()
-                    task_options = [f"{t[0]} - {t[1][:50]}..." for t in task_options]
-                    selected_task = st.selectbox("Select a task to view details", task_options, key="all_tasks_select")
-                
-                with col2:
-                    # View button
-                    if selected_task and st.button("View Task", use_container_width=True, key="all_tasks_view"):
-                        task_id = selected_task.split(" - ")[0]
-                        st.experimental_set_query_params(task_id=task_id)
-                        st.rerun()
-        
-        with tab3:
-            # Check if user has permission to create tasks
-            can_create = user_data['role'].lower() in ['manager', 'supervisor', 'inspector']
-            
-            if can_create:
-                if create_new_task():
-                    st.rerun()
-            else:
-                st.warning("You do not have permission to create tasks.")
+        show_tasks_dashboard(user_data)
 
 # Run the page if this script is the main entry point
 if __name__ == "__main__":

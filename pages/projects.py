@@ -172,9 +172,6 @@ def show_project_modules(project_id):
 
 def projects_page():
     """Main projects page"""
-    user_data = get_current_user()
-    display_header("Projects", user_data)
-    
     # Get all projects
     projects_df = get_projects()
     
@@ -183,7 +180,7 @@ def projects_page():
         return
     
     # Check if a specific project is selected
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params
     selected_project_id = query_params.get("project_id", [None])[0]
     
     if selected_project_id:
