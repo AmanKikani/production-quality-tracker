@@ -1,8 +1,9 @@
 project_id,project_name,client_name,start_date,end_date,status,total_modules,completed_modules
-1,Modular Office Building,TechSpace Inc.,2023-01-15,2023-08-30,In Progress,24,16
+1,Modular Office Building,TechSpace Inc.,2023-01-15,2023-08-30,In Progress,24,6
 2,Residential Apartment Complex,Urban Living LLC,2023-03-10,2023-12-15,In Progress,48,22
 3,Hospital Expansion Wing,City Medical Center,2023-02-01,2023-09-20,In Progress,36,30
 4,School Classroom Modules,Education District,2023-04-20,2023-07-30,Completed,12,12
 5,Retail Store Expansion,Retail Giants Corp,2023-05-15,2023-11-20,In Progress,18,6
 6,Hotel Prefab Suites,Luxury Stays Group,2023-06-01,2024-02-28,In Progress,60,15
-7,Emergency Housing Units,Disaster Relief Agency,2023-01-10,2023-06-15,Completed,30,30 
+7,Emergency Housing Units,Disaster Relief Agency,2023-01-10,2023-06-15,Completed,30,30
+8,Corporate Headquarters,Global Enterprises,2023-07-15,2024-05-30,In Progress,72,8

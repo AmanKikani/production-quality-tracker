@@ -76,36 +76,37 @@ def load_issue_details(issue_id):
             resolver_name = get_user_name(issue['resolved_by'])
             st.markdown(f"**Resolved by:** {resolver_name}")
     
-    # Status update section (if issue is not resolved)
-    if issue['status'] != 'Resolved':
-        st.divider()
-        
-        # Get current user info
-        user_data = get_current_user()
-        
-        # Check if user has permission to update issue status
-        can_update = user_data['role'].lower() in ['manager', 'supervisor', 'inspector', 'operator']
-        
-        if can_update:
-            st.subheader("Update Issue Status")
+    # Status update section
+    st.subheader("Update Status")
+    
+    status_options = ["Open", "In Progress", "Resolved"]
+    new_status = st.selectbox("New Status", status_options, index=status_options.index(issue['status']), key="issue_status")
+    
+    # Update button
+    if st.button("Update Status"):
+        status_update_success = False
+        if update_issue_status(issue_id, new_status, user_data['user_id']):
+            if new_status == 'Resolved':
+                # Create notification for issue resolved
+                notify_issue_resolved(issue_id, issue['module_id'], user_data['user_id'])
             
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                status_options = ["In Progress", "Resolved"]
-                new_status = st.selectbox("New Status", status_options)
-            
-            # Update button
-            if st.button("Update Status"):
-                if update_issue_status(issue_id, new_status, user_data['user_id']):
-                    if new_status == 'Resolved':
-                        # Create notification for issue resolved
-                        notify_issue_resolved(issue_id, issue['module_id'], user_data['user_id'])
-                    
-                    st.success(f"Issue status updated to {new_status}.")
-                    st.rerun()
-                else:
-                    st.error("Failed to update issue status.")
+            st.success(f"Issue status updated to {new_status}.")
+            status_update_success = True
+        else:
+            st.error("Failed to update issue status.")
+        
+        # Add a redirect script only on successful update
+        if status_update_success:
+            st.markdown(
+                f"""
+                <script>
+                    setTimeout(function() {{
+                        window.location.href = "?view=issues&issue_id={issue_id}";
+                    }}, 1000);
+                </script>
+                """,
+                unsafe_allow_html=True
+            )
 
 def report_issue_form():
     """Display and handle form for reporting a new issue"""
@@ -243,10 +244,11 @@ def issues_page():
         # Show details for the selected issue
         load_issue_details(selected_issue_id)
         
-        # Back button
-        if st.button("⬅️ Back to Issues"):
-            st.query_params.clear()
-            st.rerun()
+        # Back button using URL navigation
+        if st.button("⬅️ Back to Issues", key="back_to_issues_btn"):
+            # Clear the issue_id parameter but keep the view parameter
+            st.query_params.pop("issue_id", None)
+            st.query_params["view"] = "issues"
     else:
         # Show issues overview
         tab1, tab2 = st.tabs(["All Issues", "Report Issue"])
@@ -352,9 +354,9 @@ def issues_page():
                     # View button
                     if selected_issue and st.button("View Issue", use_container_width=True):
                         issue_id = selected_issue.split(" - ")[0]
-                        st.query_params.clear()
-                        st.query_params.add({"issue_id": issue_id})
-                        st.rerun()
+                        # Set query parameters directly
+                        st.query_params["issue_id"] = issue_id
+                        st.query_params["view"] = "issues"
         
         with tab2:
             # Check if user has permission to report issues
@@ -365,16 +367,23 @@ def issues_page():
                 
                 if issue_reported:
                     # Show task creation form
-                    if st.button("Yes, Create Task Now"):
+                    create_task = st.button("Yes, Create Task Now")
+                    skip_task = st.button("No, Skip for Now")
+                    
+                    if create_task:
                         st.session_state['show_task_form'] = True
-                    elif st.button("No, Skip for Now"):
-                        st.rerun()
+                    elif skip_task:
+                        # Refresh by updating query params
+                        view_param = st.query_params.get("view", ["issues"])[0]
+                        st.query_params["view"] = view_param
                     
                     # Show task form if requested
                     if 'show_task_form' in st.session_state and st.session_state['show_task_form']:
                         if create_task_for_issue(new_issue_id, module_id):
                             del st.session_state['show_task_form']
-                            st.rerun()
+                            # Refresh by updating query params
+                            view_param = st.query_params.get("view", ["issues"])[0]
+                            st.query_params["view"] = view_param
             else:
                 st.warning("You do not have permission to report issues.")
 

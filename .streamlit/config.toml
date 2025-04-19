@@ -1,0 +1,4 @@
+[server]
+serverSideSessionCacheMaxEntries = 2000
+serverSideSessionExpiry = 10800
+serverCookieLifespan = 10800

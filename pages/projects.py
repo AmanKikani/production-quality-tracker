@@ -21,6 +21,12 @@ def load_project_details(project_id):
         st.error(f"Project with ID {project_id} not found.")
         return
     
+    # Add a Back button at the top
+    if st.button("⬅️ Back to Projects", key="back_to_projects_btn"):
+        # Clear the project_id parameter but keep the view parameter
+        st.query_params.pop("project_id", None)
+        st.query_params["view"] = "projects"
+    
     # Display project header
     st.markdown(f"## {project['project_name']}")
     st.markdown(f"**Client:** {project['client_name']}")
@@ -245,8 +251,9 @@ def projects_page():
             # View button
             if selected_project and st.button("View Project", use_container_width=True):
                 project_id = selected_project.split(" - ")[0]
-                st.experimental_set_query_params(project_id=project_id)
-                st.rerun()
+                # Set query parameters directly
+                st.query_params["project_id"] = project_id
+                st.query_params["view"] = "projects"
 
 # Run the page if this script is the main entry point
 if __name__ == "__main__":

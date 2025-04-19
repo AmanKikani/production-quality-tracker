@@ -25,6 +25,7 @@ from pages.projects import projects_page
 from pages.issues import issues_page
 from pages.tasks import tasks_page
 from pages.reports import reports_page
+from pages.calendar import calendar_page
 
 # Image paths
 LOGO_PATH = "assets/images/logo.png"
@@ -76,13 +77,10 @@ def sidebar_menu():
     if user_data:
         st.sidebar.markdown(f"""
         <div class="sidebar-welcome">
-            <div style="font-weight: 600; font-size: 1.1rem; color: #e2e8f0; margin-bottom: 0.25rem;">Welcome, {user_data['username']}!</div>
+            <div style="font-weight: 600; font-size: 1.1rem; color: #e2e8f0; margin-bottom: 0.25rem;">Welcome, {user_data['full_name']}!</div>
             <div style="color: #a0aec0; font-size: 0.9rem;">Role: {user_data['role'].capitalize()}</div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Menu options
-        st.sidebar.markdown('<div class="sidebar-nav-header">NAVIGATION</div>', unsafe_allow_html=True)
         
         # Function to render navigation buttons with URLs instead of callbacks
         def nav_button(label, page_name, icon=""):
@@ -104,6 +102,7 @@ def sidebar_menu():
         # Navigation items
         nav_button("DASHBOARD", "dashboard", "📊")
         nav_button("PROJECTS", "projects", "🏗️")
+        nav_button("CALENDAR", "calendar", "📅")
         
         # Issues with notification badge
         notification_count = get_unseen_notification_count(user_data['user_id'])
@@ -132,19 +131,9 @@ def sidebar_menu():
             
             # Clear query parameters
             st.query_params.clear()
-            # Replace the logout button with a message
+            # Replace the logout button with a message  
             logout_placeholder.info("Logging out...")
-            # Use JavaScript to directly reload the page which will show login screen
-            # since authentication state is now False
-            st.markdown(
-                """
-                <script>
-                    // Force a complete page reload to get to login screen
-                    window.location.href = window.location.origin;
-                </script>
-                """,
-                unsafe_allow_html=True
-            )
+            st.rerun()
     
     # About section
     st.sidebar.markdown("---")
@@ -284,7 +273,7 @@ def login_page():
     """, unsafe_allow_html=True)
     
     # Container for login form
-    st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    
     
     # App logo and title
     app_logo_html = get_image_html(APP_ICON_PATH, css_class="app-logo", alt_text="App Logo")
@@ -361,7 +350,7 @@ def login_page():
     
     # Demo credentials section with improved styling
     st.markdown('### Demo Accounts', unsafe_allow_html=False)
-    st.markdown('<div class="demo-credentials">', unsafe_allow_html=True)
+    #st.markdown('<div class="demo-credentials">', unsafe_allow_html=True)
     
     # Demo heading
     st.markdown("""
@@ -440,7 +429,7 @@ def dashboard_page():
     
     with col1:
         # Project Progress
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+        
         st.markdown('<div class="section-title">📈 Project Progress</div>', unsafe_allow_html=True)
         projects_df = get_project_progress()
         
@@ -453,7 +442,7 @@ def dashboard_page():
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Overdue Tasks
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+        
         st.markdown('<div class="section-title">⏰ Overdue Tasks</div>', unsafe_allow_html=True)
         overdue_tasks = get_overdue_tasks()
         
@@ -485,7 +474,7 @@ def dashboard_page():
     
     with col2:
         # Quality Issues
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+
         st.markdown('<div class="section-title">🔍 Quality Issues</div>', unsafe_allow_html=True)
         
         # Get issue statistics
@@ -507,7 +496,7 @@ def dashboard_page():
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Recent activity (notifications)
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+
         st.markdown('<div class="section-title">🔔 Recent Activity</div>', unsafe_allow_html=True)
         notifications = get_notifications(user_id=user_data['user_id'], max_count=5, include_seen=True)
         
@@ -707,7 +696,7 @@ def main():
             # Only update page from query params if the user is authenticated
             view = query_params["view"][0] if isinstance(query_params["view"], list) else query_params["view"]
             # Ensure view is a valid page
-            valid_pages = ["dashboard", "projects", "issues", "tasks", "reports", "settings"]
+            valid_pages = ["dashboard", "projects", "calendar", "issues", "tasks", "reports", "settings"]
             if view in valid_pages:
                 st.session_state['page'] = view
         
@@ -903,6 +892,7 @@ def main():
             page_title = {
                 'dashboard': 'Production Dashboard',
                 'projects': 'Projects Overview',
+                'calendar': 'Project Calendar',
                 'issues': 'Quality Issues',
                 'tasks': 'Task Management',
                 'reports': 'Analytics & Reports',
@@ -913,6 +903,8 @@ def main():
                 dashboard_page()
             elif st.session_state['page'] == 'projects':
                 apply_page_layout(projects_page, page_title, user_data)
+            elif st.session_state['page'] == 'calendar':
+                apply_page_layout(calendar_page, page_title, user_data)
             elif st.session_state['page'] == 'issues':
                 apply_page_layout(issues_page, page_title, user_data)
             elif st.session_state['page'] == 'tasks':
@@ -927,7 +919,7 @@ def main():
                 
                 # Wrap main content in a container
                 st.markdown('<div class="main-content">', unsafe_allow_html=True)
-                st.markdown('<div class="card">', unsafe_allow_html=True)
+
                 st.info("Settings functionality will be implemented in future updates.")
                 st.markdown('</div>', unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)

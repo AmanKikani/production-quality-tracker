@@ -114,12 +114,23 @@ def load_task_details(task_id):
                 new_status = st.selectbox("New Status", status_options)
             
             # Update button
-            if st.button("Update Status"):
+            update_placeholder = st.empty()
+            if update_placeholder.button("Update Status"):
                 if update_task_status(task_id, new_status):
-                    st.success(f"Task status updated to {new_status}.")
-                    st.rerun()
+                    update_placeholder.success(f"Task status updated to {new_status}.")
+                    # Add a redirect script instead of st.rerun()
+                    st.markdown(
+                        f"""
+                        <script>
+                            setTimeout(function() {{
+                                window.location.href = "?view=tasks&task_id={task_id}";
+                            }}, 1000);
+                        </script>
+                        """,
+                        unsafe_allow_html=True
+                    )
                 else:
-                    st.error("Failed to update task status.")
+                    update_placeholder.error("Failed to update task status.")
 
 def create_new_task():
     """Display and handle form for creating a new task"""
@@ -219,7 +230,7 @@ def show_tasks_dashboard(user_data):
     tab1, tab2, tab3 = st.tabs(["My Tasks", "All Tasks", "Create Task"])
     
     with tab1:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+        
         st.markdown('<div class="section-title">My Tasks</div>', unsafe_allow_html=True)
         
         # Get tasks assigned to current user
@@ -302,9 +313,9 @@ def show_tasks_dashboard(user_data):
                 # View button
                 if selected_task and st.button("View Task", use_container_width=True, key="my_tasks_view"):
                     task_id = selected_task.split(" - ")[0]
-                    st.query_params.clear()
-                    st.query_params.add({"task_id": task_id})
-                    st.rerun()
+                    # Set query parameters directly
+                    st.query_params["task_id"] = task_id
+                    st.query_params["view"] = "tasks"
         st.markdown('</div>', unsafe_allow_html=True)
     
     with tab2:
@@ -405,9 +416,9 @@ def show_tasks_dashboard(user_data):
                 # View button
                 if selected_task and st.button("View Task", use_container_width=True, key="all_tasks_view"):
                     task_id = selected_task.split(" - ")[0]
-                    st.query_params.clear()
-                    st.query_params.add({"task_id": task_id})
-                    st.rerun()
+                    # Set query parameters directly
+                    st.query_params["task_id"] = task_id
+                    st.query_params["view"] = "tasks"
         st.markdown('</div>', unsafe_allow_html=True)
     
     with tab3:
@@ -418,7 +429,9 @@ def show_tasks_dashboard(user_data):
         
         if can_create:
             if create_new_task():
-                st.rerun()
+                # Refresh the page by setting the same view parameter
+                view_param = st.query_params.get("view", ["tasks"])[0]
+                st.query_params["view"] = view_param
         else:
             st.warning("You do not have permission to create tasks.")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -436,10 +449,11 @@ def tasks_page():
         # Show details for the selected task
         load_task_details(selected_task_id)
         
-        # Back button
-        if st.button("⬅️ Back to Tasks"):
-            st.query_params.clear()
-            st.rerun()
+        # Back button using URL navigation
+        if st.button("⬅️ Back to Tasks", key="back_to_tasks_btn"):
+            # Clear the task_id parameter but keep the view parameter
+            st.query_params.pop("task_id", None)
+            st.query_params["view"] = "tasks"
     else:
         show_tasks_dashboard(user_data)
 

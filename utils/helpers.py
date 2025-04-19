@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from utils.database import get_users, get_module
 from utils.notifications import get_unseen_notification_count
 import base64
+import os
 
 # UI Helper Functions
 def set_page_config(title="Production & Quality Tracker", layout="wide", menu_items=None):
@@ -39,6 +40,83 @@ def local_css(file_name=None):
             color: #334155;
             margin-bottom: 1.2rem;
             font-weight: 500;
+        }
+        
+        /* Login page and demo accounts styling */
+        .demo-credentials {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #1e1e2e;
+            border-radius: 0.5rem;
+            border: 1px solid #2d3748;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-heading {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-heading svg {
+            color: #3b82f6;
+        }
+        
+        .account-card {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #111827;
+            margin-bottom: 0.75rem;
+            border: 1px solid #374151;
+            transition: all 0.2s ease;
+        }
+        
+        .account-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            border-color: #4b5563;
+        }
+        
+        .account-card:last-child {
+            margin-bottom: 0;
+        }
+        
+        .account-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #2d3748;
+            color: #3b82f6;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+        
+        .account-details {
+            flex: 1;
+        }
+        
+        .account-role {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+        
+        .account-credentials {
+            color: #a0aec0;
+            font-size: 0.85rem;
+            font-family: monospace;
+            background-color: #111827;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
         }
         
         /* Card styles */
@@ -235,7 +313,7 @@ def display_header(title, user_data=None):
     with col1:
         st.markdown(f"""
         <div style="display: flex; align-items: center;">
-            <h1 style="margin: 0; padding: 0; font-size: 1.75rem; font-weight: 600; color: #1e3a8a;">{title}</h1>
+            <h1 style="margin: 0; padding: 0; font-size: 1.75rem; font-weight: 600; color: #3b82f6;">{title}</h1>
         </div>
         """, unsafe_allow_html=True)
     
@@ -247,20 +325,20 @@ def display_header(title, user_data=None):
             
             st.markdown(f"""
             <div style="display: flex; justify-content: flex-end; align-items: center;">
-                <div style="display: flex; align-items: center; background-color: white; 
-                    padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;
-                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; background-color: #1e1e2e; 
+                    padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid #2d3748;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.2);">
                     <div style="margin-right: 0.75rem;">
-                        <div style="font-weight: 600; font-size: 0.875rem; color: #334155; margin-bottom: 0.125rem;">
+                        <div style="font-weight: 600; font-size: 0.875rem; color: #e2e8f0; margin-bottom: 0.125rem;">
                             {user_data['username']}
                         </div>
-                        <div style="font-size: 0.75rem; color: #64748b;">
+                        <div style="font-size: 0.75rem; color: #a0aec0;">
                             {user_data['role'].capitalize()}
                         </div>
                     </div>
-                    <div style="width: 2.25rem; height: 2.25rem; background-color: #e0e7ff; 
+                    <div style="width: 2.25rem; height: 2.25rem; background-color: #2d3748; 
                         border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                        color: #4338ca; font-weight: 600; font-size: 0.875rem; border: 2px solid #c7d2fe;">
+                        color: #3b82f6; font-weight: 600; font-size: 0.875rem; border: 2px solid #4b5563;">
                         {user_data['username'][0].upper()}
                     </div>
                     {notification_badge}
@@ -353,101 +431,229 @@ def get_module_name(module_id):
 
 # Visualization helpers
 def create_progress_chart(data, title="Project Progress"):
-    """Create a horizontal bar chart for project progress"""
-    if data.empty:
-        return None
-    
+    """Create a progress chart for projects"""
+    # Create a bar chart showing project progress
     fig = px.bar(
         data,
-        y='project_name',
         x='progress',
+        y='project_name',
         title=title,
-        labels={'progress': 'Completion %', 'project_name': 'Project'},
+        labels={'progress': 'Completion Progress (%)', 'project_name': 'Project'},
+        text='progress',  # Use the actual progress values as text
+        orientation='h',
         color='progress',
-        color_continuous_scale='Viridis',
-        text='progress',
-        orientation='h'
+        color_continuous_scale=["#3B82F6", "#4ade80"]
     )
     
-    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+    # Customize appearance
     fig.update_layout(
-        xaxis_range=[0, 100],
-        height=max(300, len(data) * 50)
+        height=350,
+        margin=dict(l=20, r=20, t=40, b=20),
+        template="plotly_dark",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        font=dict(color="#e2e8f0")
     )
+    
+    # Add annotation for percentage - fix the texttemplate to properly display percentages
+    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     
     return fig
 
 def create_issues_by_category_chart(category_counts):
-    """Create a pie chart for issues by category"""
-    if not category_counts:
-        return None
+    """Create a chart showing issues by category"""
+    # Prepare data
+    categories = list(category_counts.keys())
+    counts = list(category_counts.values())
     
-    fig = px.pie(
-        values=list(category_counts.values()),
-        names=list(category_counts.keys()),
+    # Create horizontal bar chart
+    fig = px.bar(
+        x=counts,
+        y=categories,
         title="Issues by Category",
-        hole=0.4
+        labels={'x': 'Number of Issues', 'y': 'Category'},
+        orientation='h',
+        color=counts,
+        text=counts,  # Add text values to display count numbers
+        color_continuous_scale=["#3B82F6", "#dc2626"]
     )
     
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    fig.update_layout(height=400)
+    # Customize appearance
+    fig.update_layout(
+        height=350,
+        margin=dict(l=20, r=20, t=40, b=20),
+        template="plotly_dark",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        font=dict(color="#e2e8f0")
+    )
+    
+    # Ensure text displays properly
+    fig.update_traces(texttemplate='%{text}', textposition='outside')
     
     return fig
 
 def create_issues_by_severity_chart(severity_counts):
-    """Create a bar chart for issues by severity"""
-    if not severity_counts:
-        return None
+    """Create a chart showing issues by severity"""
+    # Define the order of severity levels
+    severity_order = ['Critical', 'High', 'Medium', 'Low']
     
-    severity_order = ['Low', 'Medium', 'High', 'Critical']
+    # Filter and sort data based on defined order
+    filtered_severity = {k: severity_counts.get(k, 0) for k in severity_order if k in severity_counts}
     
-    # Ensure all severity levels exist in the data
-    for severity in severity_order:
-        if severity not in severity_counts:
-            severity_counts[severity] = 0
+    # Prepare data
+    severities = list(filtered_severity.keys())
+    counts = list(filtered_severity.values())
     
-    # Create dataframe with ordered severity levels
-    df = pd.DataFrame({
-        'Severity': severity_order,
-        'Count': [severity_counts.get(severity, 0) for severity in severity_order]
-    })
+    # Define colors for each severity level
+    colors = {
+        'Critical': '#dc2626',
+        'High': '#f97316',
+        'Medium': '#f59e0b',
+        'Low': '#4ade80'
+    }
     
-    colors = ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
-    
-    fig = px.bar(
-        df,
-        x='Severity',
-        y='Count',
+    # Create pie chart
+    fig = px.pie(
+        values=counts,
+        names=severities,
         title="Issues by Severity",
-        color='Severity',
-        color_discrete_map={severity: color for severity, color in zip(severity_order, colors)},
-        category_orders={"Severity": severity_order}
+        color=severities,
+        color_discrete_map=colors
     )
     
-    fig.update_layout(height=400)
+    # Customize appearance
+    fig.update_layout(
+        height=350,
+        margin=dict(l=20, r=20, t=40, b=20),
+        template="plotly_dark",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        font=dict(color="#e2e8f0"),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.2,
+            xanchor="center",
+            x=0.5
+        )
+    )
+    
+    # Fix textinfo to properly display labels and percentages
+    fig.update_traces(textposition='inside', textinfo='label+percent')
     
     return fig
 
 def create_timeline_chart(df, date_col, title="Timeline"):
-    """Create a timeline chart from dataframe with date column"""
-    if df.empty:
+    """Create a Gantt chart for timeline visualization"""
+    # Create a copy of the dataframe to avoid modifying the original
+    chart_df = df.copy()
+    
+    # Prepare data for Gantt chart
+    if 'start_date' in chart_df.columns and 'target_completion' in chart_df.columns:
+        chart_df['start_date'] = pd.to_datetime(chart_df['start_date'])
+        chart_df['target_completion'] = pd.to_datetime(chart_df['target_completion'])
+        
+        # Define colors based on status
+        colors = {
+            'Completed': '#4ade80',
+            'In Progress': '#3b82f6',
+            'Delayed': '#dc2626',
+            'On Hold': '#f59e0b',
+            'Not Started': '#a0aec0'
+        }
+        
+        # Create figure
+        fig = px.timeline(
+            chart_df,
+            x_start='start_date',
+            x_end='target_completion',
+            y='module_name' if 'module_name' in chart_df.columns else 'project_name',
+            color='status',
+            title=title,
+            color_discrete_map=colors
+        )
+        
+        # Add current date vertical line
+        today = datetime.now()
+        fig.add_vline(x=today, line_width=1, line_color="#cbd5e1", line_dash="dash")
+        
+        # Add annotation for current date
+        fig.add_annotation(
+            x=today,
+            y=1.05,
+            text="Today",
+            showarrow=False,
+            xanchor="center",
+            yshift=10,
+            font=dict(color="#cbd5e1")
+        )
+        
+        # Customize layout
+        fig.update_layout(
+            xaxis_title="Timeline",
+            yaxis_title="",
+            height=max(300, len(chart_df) * 40),
+            template="plotly_dark",
+            paper_bgcolor="rgba(0, 0, 0, 0)",
+            plot_bgcolor="rgba(0, 0, 0, 0)",
+            font=dict(color="#e2e8f0")
+        )
+        
+        return fig
+    else:
+        # If required columns don't exist, return a basic chart
+        st.error("Required date columns not found for timeline chart")
         return None
+
+def load_image(image_path):
+    """Load an image file and return its base64 representation for embedding in HTML"""
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except Exception as e:
+        print(f"Error loading image from {image_path}: {e}")
+        return None
+
+def get_image_html(image_path, width=None, height=None, css_class=None, alt_text="Image"):
+    """Return HTML markup for an image from a local path"""
+    if not os.path.exists(image_path):
+        print(f"Image file not found: {image_path}")
+        # Return a fallback SVG image pattern instead of just a comment
+        svg_color = "#3b82f6"  # Blue color matching the app theme
+        fallback_svg = f"""
+        <svg width="{width or '100'}" height="{height or '100'}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="#2d3748"/>
+            <path d="M30,20 L70,20 L70,80 L30,80 Z" fill="{svg_color}" fill-opacity="0.6"/>
+            <circle cx="50" cy="40" r="15" fill="{svg_color}"/>
+            <path d="M30,80 L70,80 L50,50 Z" fill="{svg_color}"/>
+        </svg>
+        """
+        width_attr = f"width='{width}'" if width else ""
+        height_attr = f"height='{height}'" if height else ""
+        class_attr = f"class='{css_class}'" if css_class else ""
+        return f"""<div {width_attr} {height_attr} {class_attr}>{fallback_svg}</div>"""
     
-    # Convert date strings to datetime objects
-    df[date_col] = pd.to_datetime(df[date_col])
+    encoded_image = load_image(image_path)
+    if not encoded_image:
+        # Return a fallback pattern for failed loads too
+        print(f"Failed to load image: {image_path}")
+        svg_color = "#3b82f6"  # Blue color matching the app theme
+        fallback_svg = f"""
+        <svg width="{width or '100'}" height="{height or '100'}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="#2d3748"/>
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#a0aec0" font-family="sans-serif">
+                Image Error
+            </text>
+        </svg>
+        """
+        width_attr = f"width='{width}'" if width else ""
+        height_attr = f"height='{height}'" if height else ""
+        class_attr = f"class='{css_class}'" if css_class else ""
+        return f"""<div {width_attr} {height_attr} {class_attr}>{fallback_svg}</div>"""
     
-    # Sort by date
-    df = df.sort_values(by=date_col)
+    width_attr = f"width='{width}'" if width else ""
+    height_attr = f"height='{height}'" if height else ""
+    class_attr = f"class='{css_class}'" if css_class else ""
     
-    fig = px.timeline(
-        df,
-        x_start=date_col,
-        y='module_name',
-        title=title,
-        color='status'
-    )
-    
-    fig.update_yaxes(autorange="reversed")
-    fig.update_layout(height=max(300, len(df) * 30))
-    
-    return fig 
+    return f"""<img src="data:image/png;base64,{encoded_image}" {width_attr} {height_attr} {class_attr} alt="{alt_text}">""" 
